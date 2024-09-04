@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Canvas Page</title>
+    <link rel="stylesheet" href="canvas.css">
+</head>
+<body>
+    <nav>
+        <ul>
+            <li><a href="h.html">Home</a></li>
+            <li><a href="canvas.html">Canvas</a></li>
+            <li><a href="#tools">Tools</a></li>
+            <li><a href="h.html">About Us</a></li>
+        </ul>
+    </nav>
+    <header>
+        <h1>Canvas Workspace</h1>
+    </header>
+    <div id="canvas-container">
+        <div class="tools">
+            <button id="edit-tool">Edit</button>
+            <button id="sketch-tool">Sketch</button>
+            <button id="animate-tool">Animate</button>
+            <button id="creative-tool">Creative</button>
+            <button id="erase-tool">Erase</button> <!-- New Erase Button -->
+            <button id="start-animation">Start Animation</button> <!-- New Animation Control -->
+            <button id="stop-animation">Stop Animation</button> <!-- New Animation Control -->
+        </div>
+        <canvas id="canvas" width="800" height="600"></canvas>
+    </div>
+
+    <script>
+        // Basic script to handle canvas operations
+
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+
+        let drawing = false;
+        let currentTool = 'sketch'; // Default tool
+        let animationId;
+        let shapes = []; // To store shapes for animation
+
+        // Animation settings
+        let rect = {
+            x: 0,
+            y: 100,
+            width: 100,
+            height: 100,
+            dx: 2
+        };
+
+        // Event listeners for tools
+        document.getElementById('sketch-tool').addEventListener('click', () => {
+            currentTool = 'sketch';
+            canvas.removeEventListener('mousedown', handleEraseStart);
+            canvas.removeEventListener('mousemove', handleErase);
+            canvas.removeEventListener('mouseup', handleEraseEnd);
+            canvas.addEventListener('mousedown', handleStart);
+            canvas.addEventListener('mousemove', handleDraw);
+            canvas.addEventListener('mouseup', handleEnd);
+        });
+
+        document.getElementById('edit-tool').addEventListener('click', () => {
+            // Edit tool logic
+        });
+
+        document.getElementById('animate-tool').addEventListener('click', () => {
+            // Animation tool logic
+        });
+
+        document.getElementById('creative-tool').addEventListener('click', () => {
+            // Creative tool logic
+        });
+
+        document.getElementById('erase-tool').addEventListener('click', () => {
+            currentTool = 'erase';
+            canvas.removeEventListener('mousedown', handleStart);
+            canvas.removeEventListener('mousemove', handleDraw);
+            canvas.removeEventListener('mouseup', handleEnd);
+            canvas.addEventListener('mousedown', handleEraseStart);
+            canvas.addEventListener('mousemove', handleErase);
+            canvas.addEventListener('mouseup', handleEraseEnd);
+        });
+
+        document.getElementById('start-animation').addEventListener('click', () => {
+            animate();
+        });
+
+        document.getElementById('stop-animation').addEventListener('click', () => {
+            cancelAnimationFrame(animationId);
+        });
+
+        // Function to start animation
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear canvas
+
+            // Draw and animate the rectangle
+            ctx.fillStyle = 'blue';
+            ctx.fillRect(rect.x, rect.y, rect.width, rect.height);
+
+            // Update rectangle position
+            rect.x += rect.dx;
+
+            // Bounce off edges
+            if (rect.x + rect.width > canvas.width || rect.x < 0) {
+                rect.dx *= -1; // Reverse direction
+            }
+
+            animationId = requestAnimationFrame(animate); // Schedule next frame
+        }
+
+        // Drawing functions
+        function handleStart(event) {
+            drawing = true;
+            ctx.beginPath();
+            ctx.moveTo(event.offsetX, event.offsetY);
+        }
+
+        function handleDraw(event) {
+            if (!drawing) return;
+            ctx.lineWidth = 5;
+            ctx.lineCap = 'round';
+            ctx.strokeStyle = 'black';
+
+            ctx.lineTo(event.offsetX, event.offsetY);
+            ctx.stroke();
+        }
+
+        function handleEnd() {
+            drawing = false;
+            ctx.beginPath();
+        }
+
+        function handleEraseStart(event) {
+            drawing = true;
+            ctx.globalCompositeOperation = 'destination-out'; // Set eraser mode
+            ctx.beginPath();
+            ctx.moveTo(event.offsetX, event.offsetY);
+        }
+
+        function handleErase(event) {
+            if (!drawing) return;
+            ctx.lineWidth = 20; // Eraser size
+            ctx.lineCap = 'round';
+
+            ctx.lineTo(event.offsetX, event.offsetY);
+            ctx.stroke();
+        }
+
+        function handleEraseEnd() {
+            drawing = false;
+            ctx.beginPath();
+            ctx.globalCompositeOperation = 'source-over'; // Reset mode
+        }
+    </script>
+</body>
+</html>
